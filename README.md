@@ -1,2 +1,2 @@
 # TSSPython_200050088
-This is where I will upload my TSS assignments
+This is the repo where I will store my TSS Python 2021 assignments.
