@@ -17,10 +17,11 @@ head_y=frame_size_y/2
 snake_head_pos=[head_x,head_y]
 
 #Paramet;ers for food
-randAppleX = round((random.randrange(0, frame_size_x)/10.0))*10.0
-randAppleY = round((random.randrange(0, frame_size_y)/10.0))*10.0
+block_size = 10
+randAppleX = int(float(random.randint(0, frame_size_x-block_size))/10.0)*10
+randAppleY = int(float(random.randint(0, frame_size_y-block_size))/10.0)*10
 food_pos=[randAppleX,randAppleY]
-block_size=10
+food_spawn=True
 
 #parameters for score
 score = 0
@@ -64,20 +65,33 @@ def check_for_events():
     someone closes the window, update the direction attribute after input from users. You will have to make sure
     snake cannot reverse the direction i.e. if it turned left it cannot move right next.
     """
-    global direction
+    global direction,snakeLength
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             pygame.quit()
             sys.exit()
         if event.type==pygame.KEYDOWN:
             if event.key==pygame.K_DOWN:
-                direction='DOWN'
+                if direction=='UP':
+                    direction='UP'
+                else:
+                    direction='DOWN'
             elif event.key==pygame.K_UP:
-                direction='UP'
+                if direction=='DOWN':
+                    direction='DOWN'
+                else:
+                    direction='UP'
             elif event.key==pygame.K_RIGHT:
-                direction='RIGHT'
+                if direction=='LEFT':
+                    direction='LEFT'
+                else:
+                    direction='RIGHT'
             elif event.key==pygame.K_LEFT:
-                direction='LEFT'
+                if direction=='RIGHT':
+                    direction='RIGHT'
+                else:
+                    direction='LEFT'
+        
 
 def snake(block_size,snakeList):
     for XnY in snakeList:
@@ -114,12 +128,18 @@ def update_snake(block_size):
     head_x += head_x_change
     head_y += head_y_change
 
-def create_food(randAppleX,randAppleY):
+def create_food():
     """ 
     This function should set coordinates of food if not there on the screen. You can use randrange() to generate
     the location of the food.
     """
-    pygame.draw.rect(game_window,red,[randAppleX,randAppleY,block_size,block_size])
+    global food_pos,food_spawn
+    if food_spawn==True:
+        food_pos[0]=int(float(random.randint(0, frame_size_x-block_size))/10.0)*10
+        food_pos[1]=int(float(random.randint(0, frame_size_y-block_size))/10.0)*10
+        food_spawn=False
+
+    pygame.draw.rect(game_window,red,[food_pos[0],food_pos[1],block_size,block_size])
     pygame.display.update()
 
     
@@ -137,12 +157,12 @@ def update_screen():
     """
     Draw the snake, food, background, score on the screen
     """
-    global randAppleX,randAppleY,block_size
+    global food_pos,block_size
 
     update_snake(block_size)
     game_window.fill((0, 0, 0))
     show_score([50, 25], (255, 255, 255), size=20)
-    create_food(randAppleX, randAppleY)
+    create_food()
 
 
 def game_over():
@@ -158,8 +178,8 @@ def game_over():
 def reset_game_variables():
     """This is to reset all the variables in the game"""
     global head_x,head_y,snakeList,snakeLength,score,randAppleY,randAppleX
-    randAppleX = round((random.randrange(0, frame_size_x)/10.0))*10.0
-    randAppleY = round((random.randrange(0, frame_size_y)/10.0))*10.0
+    randAppleX = int(float(random.randint(0, frame_size_x-10))/10.0)*10
+    randAppleY = int(float(random.randint(0, frame_size_y-10))/10.0)*10
     score=0
     head_x = frame_size_x/2
     head_y = frame_size_y/2
@@ -173,6 +193,9 @@ while not Exit:
         display_message([frame_size_x/2,frame_size_y/2],"Press C to play again or press Q to quit",red,size=25)
         pygame.display.update()
         for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.exit()
+                sys.exit()
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_q:
                     gameOver=False
@@ -180,7 +203,7 @@ while not Exit:
                 elif event.key==pygame.K_c:
                     gameOver=False
                     reset_game_variables()
-
+    
                 
     # Make appropriate calls to the above functions so that the game could finally run
     check_for_events()
@@ -204,15 +227,16 @@ while not Exit:
             gameOver=True
             game_over()
             time.sleep(2)
-            continue
+            break
     
     snake(block_size,snakeList)
 
-    if head_x == randAppleX and head_y == randAppleY:
-        randAppleX = round(random.randrange(0, frame_size_x)/10.0)*10.0
-        randAppleY = round(random.randrange(0, frame_size_y)/10.0)*10.0
+    if head_x == food_pos[0] and head_y == food_pos[1]:
+        food_pos[0] = int(float(random.randint(0, frame_size_y-block_size))/10.0)*10
+        food_pos[1] = int(float(random.randint(0, frame_size_y-block_size))/10.0)*10
         snakeLength += 1
         score+=1
+        food_spawn=True
     
     pygame.display.update()
 
